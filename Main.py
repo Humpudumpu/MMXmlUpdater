@@ -12,28 +12,20 @@ mmDoc = ET.parse(multimediaFilePath)
 root = mmDoc.getroot()
 if os.path.exists(multimediaFilePath_Edited):
     os.remove(multimediaFilePath_Edited)
-shutil.copyfile(multimediaFilePath, multimediaFilePath_Edited)
+
 affectedFonts = []
-for styleNode in root.iter("Style"):
-    arialNarrow = False
-    styleNodeName = styleNode.attrib["Name"]
-    for subNodes in styleNode.getchildren():
-        if subNodes.tag == "Font" and subNodes.text == "Arial Narrow":
-            arialNarrow = True
-        if subNodes.tag == "Size" and arialNarrow:
-            print(" Name: ", styleNodeName, end=" ::  ")
-            print(" Current Size: ", subNodes.text, end=" <> ")
-            subNodes.text = int(subNodes.text) - 2
-            print(" New Size: ", subNodes.text)
-            affectedFonts.append(styleNodeName)
 
-for font in affectedFonts:
-    print(font)
+for styleNodes in root.findall(".//MultiLang/Style[Font='Arial Narrow']"):
+    print(" Affected font node : "+ styleNodes.attrib["Name"])
+    affectedFonts.append(styleNodes.attrib["Name"])
+    for fontNodes in styleNodes.findall(".//Font"):
+        print("Old font : " + fontNodes.text, end=" <> ")
+        fontNodes.text = "Arial"
+        print("New font : " + fontNodes.text, end=" <> ")
+    for sizeNodes in styleNodes.findall(".//Size"):
+        print("Old font size: ", sizeNodes.text, end=" <> ")
+        sizeNodes.text = int(sizeNodes.text) - 2
+        print("New font size: ", sizeNodes.text)
 
-for childNodes in root.iter():
-    if hasattr(childNodes, "Style"):
-        for subSizeChildNodes in childNodes:
-            if subSizeChildNodes.tag == "Size":
-                print("Changed font size for element :" + childNodes.get("Name") + subSizeChildNodes.text + " to ", end="")
-                subSizeChildNodes.text = int(subSizeChildNodes.text) - 2
-                print(subSizeChildNodes.text)
+for affectedFont in affectedFonts:
+    print(affectedFont, end=" <> ")
