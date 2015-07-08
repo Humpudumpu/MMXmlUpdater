@@ -6,14 +6,14 @@ import os
 import contextlib
 import mmap
 
-multimediaFilePath = "C:\\Work\CustomSet\\Multimedia\\GroupCommon\\XML\\AuchanFranceCommon.xml"
-multimediaFilePath_Edited = "C:\\Work\CustomSet\\Multimedia\\GroupCommon\\XML\\AuchanFranceCommon_edited.xml"
+multimediaFilePath = "AuchanFranceCommon.xml"
+multimediaFilePath_Edited = "AuchanFranceCommon_edited.xml"
 mmDoc = ET.parse(multimediaFilePath)
 root = mmDoc.getroot()
 if os.path.exists(multimediaFilePath_Edited):
     os.remove(multimediaFilePath_Edited)
 shutil.copyfile(multimediaFilePath, multimediaFilePath_Edited)
-
+affectedFonts = []
 for styleNode in root.iter("Style"):
     arialNarrow = False
     styleNodeName = styleNode.attrib["Name"]
@@ -25,5 +25,15 @@ for styleNode in root.iter("Style"):
             print(" Current Size: ", subNodes.text, end=" <> ")
             subNodes.text = int(subNodes.text) - 2
             print(" New Size: ", subNodes.text)
+            affectedFonts.append(styleNodeName)
 
-mmDoc.write(multimediaFilePath_Edited,None,None, None, None, True)
+for font in affectedFonts:
+    print(font)
+
+for childNodes in root.iter():
+    if hasattr(childNodes, "Style"):
+        for subSizeChildNodes in childNodes:
+            if subSizeChildNodes.tag == "Size":
+                print("Changed font size for element :" + childNodes.get("Name") + subSizeChildNodes.text + " to ", end="")
+                subSizeChildNodes.text = int(subSizeChildNodes.text) - 2
+                print(subSizeChildNodes.text)
